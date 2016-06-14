@@ -2,6 +2,7 @@ var http = require('http'),
     connect = require('connect'),
     httpProxy = require('http-proxy'), 
     iconv = require('iconv-lite'), 
+    harmon = require('harmon'), 
     fs = require('fs');
 
 
@@ -21,31 +22,20 @@ simpleselect.func = function (node) {
 
     //collect all the data in the stream
     stm.on('data', function(data) {
-       all += data;
+      data = iconv.decode(data, 'gbk').toString('utf8');
+      all += data;
     });
 
     //When the read side of the stream has ended..
     stm.on('end', function() {
-
-      all = iconv.encode(all, 'utf8');
-      all = all.toString();
-      process.stdout.write(all);
-
-      fs.writeFile("C:\\Users\\wuyuxiang\\Desktop\\harmon-master\\myTest\\before", all, function(err) {
-          if (err) throw err;
-      });
-
+      // SongTaste Logic
       all = all.replace("<!-- <div id=\"playicon", "<div id=\"playicon");
       all = all.replace("<link rel=\"stylesheet\" href=\"http://www.songtaste.com/plugin/fancybox/jquery.fancybox-1.3.4.css\" type=\"text/css\" /> -->", "<link rel=\"stylesheet\" href=\"http://www.songtaste.com/plugin/fancybox/jquery.fancybox-1.3.4.css\" type=\"text/css\" />");
-
-      fs.writeFile("C:\\Users\\wuyuxiang\\Desktop\\harmon-master\\myTest\\after", all, function(err) {
-          if (err) throw err;
-      });
-
       
       //Now on the write side of the stream write some data using .end()
       //N.B. if end isn't called it will just hang.  
-      stm.end(all, 'utf8');
+      var resStr = iconv.encode(all, 'gbk');
+      stm.end(resStr);
     
     });    
 }
@@ -62,7 +52,7 @@ var proxy = httpProxy.createProxyServer({
 })
 
 
-app.use(require('../')([], selects));
+app.use(harmon([], selects));
 
 app.use(
   function (req, res) {
@@ -71,3 +61,12 @@ app.use(
 );
 
 http.createServer(app).listen(8091);
+
+var pid = process.pid;
+console.log(pid);
+var pidFile = 'pid.txt';
+var existsSync = fs.existsSync || path.existsSync;
+existsSync(pidFile) && fs.unlinkSync(pidFile);
+fs.writeFile(pidFile, '' + pid, function(err) {
+  if(err) console.log(err);
+});
