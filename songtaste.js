@@ -42,6 +42,19 @@ simpleselect.func = function (node) {
 
 selects.push(simpleselect);
 
+var imgSelector = {};
+imgSelector.query = '.song_left > img';
+imgSelector.func = function(node) {
+	var stm = node.createStream({ outer : true });
+    stm.on('data', function(data) {
+    });
+
+    stm.on('end', function() {
+      stm.end('');
+    });    
+}
+selects.push(imgSelector);
+
 //
 // Basic Connect App
 //
