@@ -31,7 +31,7 @@ simpleselect.func = function (node) {
       // SongTaste Logic
       all = all.replace("<!-- <div id=\"playicon", "<div id=\"playicon");
       all = all.replace("<link rel=\"stylesheet\" href=\"http://www.songtaste.com/plugin/fancybox/jquery.fancybox-1.3.4.css\" type=\"text/css\" /> -->", "<link rel=\"stylesheet\" href=\"http://www.songtaste.com/plugin/fancybox/jquery.fancybox-1.3.4.css\" type=\"text/css\" />");
-      
+      process.stdout.write('do once');
       //Now on the write side of the stream write some data using .end()
       //N.B. if end isn't called it will just hang.  
       var resStr = iconv.encode(all, 'gbk');
@@ -60,7 +60,7 @@ app.use(
   }
 );
 
-http.createServer(app).listen(8091);
+http.createServer(app).listen(8093);
 
 var pid = process.pid;
 console.log(pid);
