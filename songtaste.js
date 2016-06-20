@@ -7,40 +7,57 @@ var http = require('http'),
 
 
 var selects = [];
-var simpleselect = {};
 
-//<img id="logo" src="/images/logo.svg" alt="node.js">
-simpleselect.query = '.song_left';
-simpleselect.func = function (node) {
-    
-    //Create a read/write stream wit the outer option 
-    //so we get the full tag and we can replace it
-    var stm = node.createStream({ outer : true });
+var bodyselect = {};
 
-    //variable to hold all the info from the data events
-    var all = '';
+bodyselect.query = 'body';
+bodyselect.func = function(node) {
+	var stm = node.createStream({outer : false});
+	var all = '';
 
-    //collect all the data in the stream
-    stm.on('data', function(data) {
-      data = iconv.decode(data, 'gbk').toString('utf8');
-      all += data;
-    });
+	stm.on('data', function(data) {
+		data = iconv.decode(data, 'gbk').toString('utf8');
+		all += data;
+	});
 
-    //When the read side of the stream has ended..
-    stm.on('end', function() {
-      // SongTaste Logic
-      all = all.replace("<!-- <div id=\"playicon", "<div id=\"playicon");
-      all = all.replace("<link rel=\"stylesheet\" href=\"http://www.songtaste.com/plugin/fancybox/jquery.fancybox-1.3.4.css\" type=\"text/css\" /> -->", "<link rel=\"stylesheet\" href=\"http://www.songtaste.com/plugin/fancybox/jquery.fancybox-1.3.4.css\" type=\"text/css\" />");
-      process.stdout.write('do once');
-      //Now on the write side of the stream write some data using .end()
-      //N.B. if end isn't called it will just hang.  
-      var resStr = iconv.encode(all, 'gbk');
-      stm.end(resStr);
-    
-    });    
+	stm.on('end', function() {
+		all = all.replace(/<!--([\s\S]*?)-->/g, "$1");
+		all = all.replace(/^\/\/(.*$)/mg, "$1");
+
+        // all = all.replace("<!-- <div id=\"playicon", "<div id=\"playicon");
+        // all = all.replace("<link rel=\"stylesheet\" href=\"http://www.songtaste.com/plugin/fancybox/jquery.fancybox-1.3.4.css\" type=\"text/css\" /> -->", "<link rel=\"stylesheet\" href=\"http://www.songtaste.com/plugin/fancybox/jquery.fancybox-1.3.4.css\" type=\"text/css\" />");
+
+		process.stdout.write('deal body\n');
+		var resStr = iconv.encode(all, 'gbk');
+		stm.end(resStr);
+	});
 }
 
-selects.push(simpleselect);
+selects.push(bodyselect);
+
+// var tjselect = {};
+
+// tjselect.query = '.tj_scleft';
+// tjselect.func = function(node) {
+// 	var stm = node.createStream({outer : false});
+// 	var all2 = '';
+
+// 	stm.on('data', function(data) {
+// 		data = iconv.decode(data, 'gbk').toString('utf8');
+// 		all2 += data;
+// 	});
+
+// 	stm.on('end', function() {
+// 		all2 = all2.replace(/<!--([\s\S]*?)-->/g, "$1");
+// 		all2 = all2.replace(/^\/\/(.*$)/mg, "$1");
+
+// 		process.stdout.write('deal .tj_scleft\n');
+// 		var resStr = iconv.encode(all, 'gbk');
+// 		stm.end(resStr);
+// 	});
+// }
+// 
+// selects.push(tjselect);
 
 var imgSelector = {};
 imgSelector.query = '.song_left > img';
@@ -50,6 +67,7 @@ imgSelector.func = function(node) {
     });
 
     stm.on('end', function() {
+   	  process.stdout.write('remove .song_left > img\n');
       stm.end('');
     });    
 }
